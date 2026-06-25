@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hacelo Circular | Proyecto Oficial E.E.S. N° 1 Balcarce</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        darkBg: '#0b1121',
+                        darkCard: '#151e32',
+                        darkBorder: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Lexend', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'premium': '0 10px 40px -10px rgba(16, 185, 129, 0.15)',
+                        'premium-dark': '0 10px 40px -10px rgba(16, 185, 129, 0.05)',
+                        'input-focus': '0 0 0 3px rgba(16, 185, 129, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- AOS Animaciones -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <!-- Leaflet Mapas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        h1, h2, h3, h4, .font-display { font-family: 'Lexend', sans-serif; }
+        
+        .bg-pattern { background-image: radial-gradient(rgba(16, 185, 129, 0.12) 1px, transparent 1px); background-size: 28px 28px; }
+        
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+
+        /* Borde Aurora Animado */
+        @keyframes rotate-aurora { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .aurora-card { position: relative; border-radius: 1.5rem; padding: 2px; z-index: 1; overflow: hidden; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); transition: transform 0.4s ease, box-shadow 0.4s ease; }
+        .aurora-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.2); }
+        .aurora-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, #10b981, #06b6d4, #3b82f6, #8b5cf6, #10b981); animation: rotate-aurora 6s linear infinite; z-index: -1; }
+        .aurora-card-inner { background-color: white; border-radius: calc(1.5rem - 2px); height: 100%; width: 100%; z-index: 2; position: relative; }
+        .dark .aurora-card-inner { background-color: #151e32; }
+
+        .chat-scroll { overflow-y: auto; scroll-behavior: smooth; }
+        .chat-scroll::-webkit-scrollbar { width: 5px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .chat-scroll::-webkit-scrollbar-thumb { background: #334155; }
+
+        .typing-indicator-container { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 1.25rem; border-top-left-radius: 4px; background-color: #f8fafc; border: 1px solid #e2e8f0; width: fit-content; }
+        .dark .typing-indicator-container { background-color: #1e293b; border-color: #334155; }
+        .typing-dot { width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; animation: typingBounce 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0.4); opacity: 0.4;} 40% { transform: scale(1.1); opacity: 1;} }
+        
+        .chat-content strong { font-weight: 700; color: inherit; }
+        .chat-content ul { list-style-type: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+        .chat-content li { margin-bottom: 0.35rem; }
+
+        .msg-enter { animation: msgSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes msgSlideUp { from { opacity: 0; transform: translateY(15px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-darkBg dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
+
+    <!-- Navbar Institucional -->
+    <nav class="fixed w-full z-50 bg-white/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-slate-200 dark:border-darkBorder transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-brand-600 to-teal-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20 float-anim">
+                        <i data-lucide="recycle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="font-display font-bold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-none block">Hacelo Circular</span>
+                        <p class="text-[9px] uppercase font-bold text-brand-600 dark:text-brand-400 tracking-wider leading-none mt-1">E.E.S. N° 1 Balcarce</p>
+                    </div>
+                </div>
+
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="#inicio" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition">Inicio</a>
+                    <a href="#estadisticas" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition">Investigación</a>
+                    <a href="#mapa-oficial" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition">EcoMapa</a>
+                    <a href="#encuesta" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition">Encuesta</a>
+                    <a href="#asistente-ia" class="flex items-center gap-2 bg-slate-900 dark:bg-brand-600 hover:bg-slate-800 dark:hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-md hover:scale-105">
+                        <i data-lucide="bot" class="w-4 h-4 text-brand-400 dark:text-white"></i> IA Educativa
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-3 lg:hidden">
+                    <a href="#encuesta" class="text-slate-600 dark:text-slate-300 p-2">
+                        <i data-lucide="clipboard-signature" class="w-5 h-5"></i>
+                    </a>
+                    <button id="theme-toggle-mobile" class="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors">
+                        <i data-lucide="sun" class="w-5 h-5 dark:hidden"></i>
+                        <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Botón Theme Flotante -->
+    <button id="theme-toggle-desktop" class="hidden lg:flex fixed bottom-6 right-6 w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-soft border border-slate-200 dark:border-slate-700 items-center justify-center z-50 text-slate-600 dark:text-slate-300 hover:scale-110 transition-transform">
+        <i data-lucide="sun" class="w-5 h-5 dark:hidden"></i>
+        <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+    </button>
+
+    <!-- Hero -->
+    <section id="inicio" class="relative pt-32 pb-16 lg:pt-48 lg:pb-32 overflow-hidden bg-pattern">
+        <div class="absolute top-20 right-10 w-96 h-96 bg-brand-400/10 rounded-full blur-[100px] pointer-events-none float-anim"></div>
+        <div class="absolute bottom-10 left-10 w-80 h-80 bg-cyan-400/10 rounded-full blur-[100px] pointer-events-none float-anim" style="animation-delay: 2s;"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div data-aos="fade-down" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 text-[11px] font-bold uppercase tracking-wider mb-8 border border-brand-200 dark:border-brand-800 shadow-sm">
+                <i data-lucide="award" class="w-3.5 h-3.5"></i> Feria Distrital de Ciencias 2026
+            </div>
+            
+            <h1 data-aos="zoom-in" data-aos-delay="100" class="text-4xl sm:text-6xl md:text-7xl font-display font-black text-slate-900 dark:text-white leading-tight mb-6">
+                Hacelo Circular,<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-cyan-500 drop-shadow-sm">hacelo por mí</span>
+            </h1>
+            
+            <p data-aos="fade-up" data-aos-delay="200" class="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mx-auto px-4">
+                Proyecto de investigación socioambiental de la <strong>E.E.S. N° 1 "A. G. Balcarce"</strong> para erradicar la desinformación urbana, georreferenciar EcoPuntos y promover el reciclaje efectivo.
+            </p>
+            
+            <div data-aos="fade-up" data-aos-delay="300" class="mt-10 flex flex-col sm:flex-row justify-center gap-4 px-4">
+                <a href="#mapa-oficial" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold px-8 py-3.5 rounded-xl shadow-premium dark:shadow-premium-dark flex items-center justify-center gap-2 transition-all hover:scale-105">
+                    <i data-lucide="map-pinned" class="w-4.5 h-4.5"></i> Explorar EcoMapa
+                </a>
+                <a href="#encuesta" class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-semibold px-8 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-soft">
+                    <i data-lucide="clipboard-edit" class="w-4.5 h-4.5 text-brand-600"></i> Registrar Aporte
+                </a>
+            </div>
+
+            <!-- Ficha Técnica Institucional -->
+            <div data-aos="fade-up" data-aos-delay="400" class="mt-16 max-w-4xl mx-auto bg-white/70 dark:bg-darkCard/70 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-soft border border-white dark:border-darkBorder">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-darkBorder">
+                    <div class="pt-2 sm:pt-0 sm:px-4">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-brand-500"></i> Expositores</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">Aylén Fernandez Arias</p>
+                        <p class="text-[11px] text-slate-500 mb-2">DNI 48.766.154</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">Joaquin Ayala</p>
+                        <p class="text-[11px] text-slate-500">DNI 49.075.962</p>
+                    </div>
+                    <div class="pt-4 sm:pt-0 sm:px-4">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-brand-500"></i> Asesores</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">Alejandra Etcheverriborde</p>
+                        <p class="text-[11px] text-slate-500 mb-2">DNI 34.253.768</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">Laura Mastrovita</p>
+                        <p class="text-[11px] text-slate-500">DNI 24.969.743</p>
+                    </div>
+                    <div class="pt-4 sm:pt-0 sm:px-4">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><i data-lucide="school" class="w-3.5 h-3.5 text-brand-500"></i> Institución</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">E.E.S. N° 1 "A. G. Balcarce"</p>
+                        <p class="text-[11px] font-bold text-brand-600 dark:text-brand-400 mb-2 mt-0.5">CUE: 060613900</p>
+                        <p class="text-xs text-slate-500 leading-tight">Nivel Secundaria Superior. Cs. Sociales y Comunicación.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trabajo de Campo y Estadísticas -->
+    <section id="estadisticas" class="py-20 bg-white dark:bg-darkCard border-y border-slate-100 dark:border-darkBorder overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <div class="lg:col-span-6 space-y-6" data-aos="fade-right">
+                    <span class="text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider text-[11px] flex items-center gap-2"><i data-lucide="microscope" class="w-4 h-4"></i> Investigación Cuantitativa</span>
+                    <h2 class="text-3xl sm:text-4xl font-display font-bold text-slate-900 dark:text-white leading-tight">140 Encuestas.<br>La gran paradoja.</h2>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm sm:text-base leading-relaxed">
+                        Entrevistamos presencialmente a la comunidad en la vía pública y en <strong>EduCoAgro 2025</strong>. El resultado fue claro: la gente tiene voluntad ecológica, pero el sistema sufre una grave barrera de información.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div class="bg-slate-50 dark:bg-darkBg p-5 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm transition hover:-translate-y-1">
+                            <span class="block text-3xl font-black text-brand-500">98.6%</span>
+                            <span class="text-sm font-semibold text-slate-800 dark:text-white mt-1 block">Preocupación Alta</span>
+                            <span class="text-xs text-slate-500 mt-1 block">Les preocupa el crecimiento del volumen de residuos.</span>
+                        </div>
+                        <div class="bg-rose-50 dark:bg-rose-950/20 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/30 shadow-sm relative overflow-hidden transition hover:-translate-y-1">
+                            <div class="absolute -right-4 -top-4 bg-rose-500/10 w-20 h-20 rounded-full animate-ping"></div>
+                            <span class="block text-3xl font-black text-rose-500">67.0%</span>
+                            <span class="text-sm font-semibold text-rose-900 dark:text-rose-300 mt-1 block">Desconoce Puntos</span>
+                            <span class="text-xs text-rose-700 dark:text-rose-400 mt-1 block">Ignoran dónde están o cómo usar los EcoPuntos locales.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-6 w-full" data-aos="fade-left">
+                    <div class="bg-slate-50 dark:bg-darkBg p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-darkBorder shadow-soft">
+                        <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                            <div>
+                                <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-brand-500"></i> Hábitos Domésticos
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-1">Sistematización de la separación en origen.</p>
+                            </div>
+                            <span class="px-3 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-[10px] font-bold rounded-full w-fit">140 RESPUESTAS</span>
+                        </div>
+                        <div class="relative h-[250px] sm:h-[300px] w-full">
+                            <canvas id="chartEncuestas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- La Jornada (Efecto Borde Aurora Premium) -->
+    <section id="jornada" class="py-20 bg-slate-50 dark:bg-darkBg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16" data-aos="fade-up">
+                <span class="text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider text-[11px] flex items-center justify-center gap-1.5"><i data-lucide="calendar-heart" class="w-4 h-4"></i> 31 de Octubre de 2025</span>
+                <h2 class="text-3xl sm:text-4xl font-display font-bold text-slate-900 dark:text-white mt-2">Impacto Sociocomunitario</h2>
+                <p class="mt-4 text-slate-600 dark:text-slate-400 text-sm sm:text-base">Uniendo proyectos científicos, académicos y solidarios, movilizamos a más de 150 vecinos en una jornada histórica.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="aurora-card" data-aos="fade-up" data-aos-delay="0">
+                    <div class="aurora-card-inner p-8 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-100 dark:border-brand-800 float-anim">
+                                <i data-lucide="network" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">Alianzas en Red</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Trabajo conjunto con <strong>INTA Balcarce</strong> (Proyectos I030 e IPADS), <strong>UNMdP</strong> (Cocinas Soberanas), Sacheteras, NODO y Banco de Alimentos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="aurora-card" data-aos="fade-up" data-aos-delay="150">
+                    <div class="aurora-card-inner p-8 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-100 dark:border-brand-800 float-anim" style="animation-delay: 1s;">
+                                <i data-lucide="paintbrush" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">Talleres Prácticos</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Armado de <strong>EcoJuegos</strong>, confección de <strong>EcoBolsas</strong> con sachets, e intervención de neumáticos para camas de mascotas ("Perritos Picassitos").</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="aurora-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="aurora-card-inner p-8 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-100 dark:border-brand-800 float-anim" style="animation-delay: 2s;">
+                                <i data-lucide="package-plus" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">Inauguración de Cestos</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Presentación de dos cestos selectivos para la separación en origen de la escuela, financiados por el programa <strong>Voces Adolescentes</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mapa Oficial -->
+    <section id="mapa-oficial" class="py-20 bg-slate-100 dark:bg-[#0b1120] relative border-y border-slate-200 dark:border-darkBorder overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up">
+                <span class="text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider text-[11px] flex items-center justify-center gap-1.5"><i data-lucide="map" class="w-4 h-4"></i> Solución Tecnológica</span>
+                <h2 class="text-3xl sm:text-4xl font-display font-bold text-slate-900 dark:text-white mt-2">EcoMapa Oficial Balcarce</h2>
+                <p class="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                    Acceso directo a nuestro mapa oficial en Google My Maps para erradicar el 67% de desconocimiento.
+                </p>
+            </div>
+
+            <!-- Botón de acceso al Mapa -->
+            <div class="flex flex-col items-center justify-center mb-16" data-aos="zoom-in">
+                <a href="https://goo.gl/maps/33e35NJ1bejtXG2k7" target="_blank" rel="noopener noreferrer" 
+                   class="relative w-full max-w-3xl bg-white dark:bg-darkCard rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-darkBorder shadow-soft overflow-hidden group cursor-pointer flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-center sm:text-left transition-all duration-300 hover:shadow-premium dark:hover:shadow-premium-dark hover:-translate-y-1">
+                    
+                    <div class="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-brand-50 to-transparent dark:from-brand-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-50 dark:bg-darkBg flex items-center justify-center shrink-0 border-4 border-white dark:border-darkCard shadow-lg z-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                        <i data-lucide="map-pinned" class="w-10 h-10 sm:w-12 sm:h-12 text-brand-500"></i>
+                    </div>
+                    
+                    <div class="z-10 w-full">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider mb-3 border border-blue-100 dark:border-blue-800">
+                            <i data-lucide="external-link" class="w-3 h-3"></i> Enlace Externo Seguro
+                        </div>
+                        <h3 class="text-2xl sm:text-3xl font-display font-black text-slate-900 dark:text-white mb-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">Abrir el EcoMapa Digital</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Encontrá el EcoPunto inorgánico, acopio de Botellas de Amor o recolección del Plan BIO más cercano a tu casa.</p>
+                        
+                        <span class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-brand-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm shadow-md group-hover:bg-brand-500 transition-all hover:scale-105 w-full sm:w-auto">
+                            Ver en Google Maps <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Contexto Químico -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-aos="fade-up">
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl border border-slate-200 dark:border-darkBorder shadow-soft transition hover:-translate-y-1">
+                    <div class="w-10 h-10 bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-lg flex items-center justify-center mb-4"><i data-lucide="trash-2" class="w-5 h-5"></i></div>
+                    <h4 class="font-semibold text-slate-900 dark:text-white text-sm mb-2">EcoPuntos (Inorgánicos)</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Materiales sin base de carbono y de lenta degradación (vidrio, cartón, metal, plástico). Destacan GeoParque Pun Antu y Plaza Colón.</p>
+                </div>
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl border border-slate-200 dark:border-darkBorder shadow-soft transition hover:-translate-y-1">
+                    <div class="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg flex items-center justify-center mb-4"><i data-lucide="heart-handshake" class="w-5 h-5"></i></div>
+                    <h4 class="font-semibold text-slate-900 dark:text-white text-sm mb-2">Botellas de Amor</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Plásticos flexibles de un solo uso compactados en botellas plásticas para producir madera plástica. (Acopio: Esc. Especial 502).</p>
+                </div>
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl border border-slate-200 dark:border-darkBorder shadow-soft transition hover:-translate-y-1">
+                    <div class="w-10 h-10 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center mb-4"><i data-lucide="droplet" class="w-5 h-5"></i></div>
+                    <h4 class="font-semibold text-slate-900 dark:text-white text-sm mb-2">Aceite Plan BIO</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Aceite de cocina sumamente contaminante. Se recolecta en escuelas y el Taller Protegido para ser enviado a Bs.As como Biocombustible.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Nueva Sección: Encuesta Escolar / Discord Webhook -->
+    <section id="encuesta" class="py-20 bg-white dark:bg-darkCard border-y border-slate-200 dark:border-darkBorder relative overflow-hidden">
+        <!-- Decoraciones -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-brand-400/10 rounded-full blur-[80px] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-10" data-aos="fade-down">
+                <span class="text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider text-[11px] flex items-center justify-center gap-1.5">
+                    <i data-lucide="clipboard-signature" class="w-4 h-4"></i> Encuesta y Contacto
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-display font-bold text-slate-900 dark:text-white mt-2">¡Sumá tu aporte!</h2>
+                <p class="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                    Completá tus datos y dejanos tu opinión sobre la iniciativa. Tu aporte nos ayuda a seguir creciendo como comunidad sostenible.
+                </p>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-[#0c1220] p-6 sm:p-10 rounded-3xl shadow-soft border border-slate-200 dark:border-slate-800" data-aos="zoom-in">
+                <form id="formulario-discord" onsubmit="enviarEncuesta(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Nombre -->
+                        <div class="space-y-2">
+                            <label for="enc-nombre" class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Nombre</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i></div>
+                                <input type="text" id="enc-nombre" required placeholder="Ej: Juan" 
+                                    class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkCard border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-shadow text-sm dark:text-white placeholder-slate-400">
+                            </div>
+                        </div>
+                        <!-- Apellido -->
+                        <div class="space-y-2">
+                            <label for="enc-apellido" class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Apellido</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i></div>
+                                <input type="text" id="enc-apellido" required placeholder="Ej: Pérez" 
+                                    class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkCard border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-shadow text-sm dark:text-white placeholder-slate-400">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Escuela -->
+                        <div class="space-y-2">
+                            <label for="enc-escuela" class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Escuela / Institución</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i data-lucide="school" class="w-4 h-4 text-slate-400"></i></div>
+                                <input type="text" id="enc-escuela" required placeholder="Ej: E.E.S. N° 1 Balcarce" 
+                                    class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkCard border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-shadow text-sm dark:text-white placeholder-slate-400">
+                            </div>
+                        </div>
+                        <!-- Curso -->
+                        <div class="space-y-2">
+                            <label for="enc-curso" class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Año / Curso</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><i data-lucide="book-open" class="w-4 h-4 text-slate-400"></i></div>
+                                <input type="text" id="enc-curso" required placeholder="Ej: 5to 1ra Sociales" 
+                                    class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkCard border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-shadow text-sm dark:text-white placeholder-slate-400">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opinión sobre el proyecto -->
+                    <div class="space-y-2">
+                        <label for="enc-opinion" class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Opiniones sobre el proyecto</label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-0 pl-3.5 flex items-start pointer-events-none"><i data-lucide="message-square" class="w-4 h-4 text-slate-400"></i></div>
+                            <textarea id="enc-opinion" rows="2" placeholder="¿Qué te pareció la investigación, el mapa o la página web?" 
+                                class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkCard border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-shadow text-sm dark:text-white placeholder-slate-400 resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Aporte -->
+                    <div class="space-y-2">
+                        <label for="enc-aporte" class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">¿Qué te gustaría aportar?</label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-0 pl-3.5 flex items-start pointer-events-none"><i data-lucide="lightbulb" class="w-4 h-4 text-slate-400"></i></div>
+                            <textarea id="enc-aporte" rows="2" placeholder="Ideas, materiales para reciclar, participar en talleres, etc..." 
+                                class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkCard border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-shadow text-sm dark:text-white placeholder-slate-400 resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Envío -->
+                    <div class="pt-4 text-center">
+                        <button type="submit" id="btn-enviar-encuesta" class="w-full sm:w-auto min-w-[220px] inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition-all hover:-translate-y-0.5">
+                            Enviar mis datos <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Asistente IA Institucional -->
+    <section id="asistente-ia" class="py-16 sm:py-24 bg-slate-900 border-t border-slate-800 text-white relative">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div class="absolute -top-[10%] left-[10%] w-[40%] h-[40%] rounded-full bg-brand-500/10 blur-[120px]"></div>
+            <div class="absolute top-[40%] right-[10%] w-[30%] h-[30%] rounded-full bg-blue-500/10 blur-[120px]"></div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
+            <div class="text-center mb-8" data-aos="fade-down">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 text-brand-400 mb-4 shadow-glow float-anim">
+                    <i data-lucide="bot-message-square" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Asistente Virtual Escolar</h2>
+                <p class="mt-3 text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">Hablá con nuestra Inteligencia Artificial de forma natural. Conoce con precisión el 100% de la carpeta de campo y el informe de investigación.</p>
+            </div>
+
+            <!-- Interfaz del Chat Mejorada -->
+            <div data-aos="zoom-in" class="bg-white dark:bg-darkCard rounded-3xl shadow-premium border border-slate-200 dark:border-darkBorder flex flex-col w-full h-[70vh] max-h-[620px] overflow-hidden">
+                
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 border-b border-slate-200 dark:border-darkBorder flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center relative shadow-sm border border-brand-200 dark:border-brand-800">
+                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-brand-500 border-2 border-white dark:border-slate-800 rounded-full animate-pulse"></span>
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-sm text-slate-900 dark:text-white">IA "Hacelo Circular"</h3>
+                            <span class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Vocero Oficial del Proyecto</span>
+                        </div>
+                    </div>
+                    <!-- Sugerencias -->
+                    <div class="hidden sm:flex gap-2">
+                        <button onclick="insertarPregunta('¡Hola! Contame sobre la jornada que hicieron el 31 de octubre')" class="text-[11px] font-medium bg-white dark:bg-darkBg text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-darkBorder hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Jornada Escolar</button>
+                        <button onclick="insertarPregunta('¿Me podés dar los DNIs de los alumnos expositores y docentes asesores?')" class="text-[11px] font-medium bg-white dark:bg-darkBg text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-darkBorder hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5"></i> Autores y DNIs</button>
+                    </div>
+                </div>
+
+                <div id="chat-box" class="flex-1 p-4 sm:p-6 space-y-5 bg-white dark:bg-[#0c1220] chat-scroll">
+                    <!-- Mensaje Inicial -->
+                    <div class="flex gap-3 sm:gap-4 w-full animate-msg-enter">
+                        <div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white shrink-0 shadow-md">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 p-4 rounded-2xl rounded-tl-sm shadow-sm text-sm text-slate-700 dark:text-slate-200 chat-content w-full sm:max-w-[85%] leading-relaxed">
+                            ¡Hola! 👋 Qué bueno tenerte por acá. Soy el asistente de inteligencia artificial del proyecto. <br><br>
+                            Conozco a la perfección todos los detalles de nuestra carpeta de campo y el informe de la Feria de Ciencias, por ejemplo:
+                            <ul>
+                                <li>Los resultados estadísticos de las 140 encuestas de Balcarce.</li>
+                                <li>Todo sobre la jornada del 31 de octubre y las instituciones (INTA, UNMdP, Sacheteras).</li>
+                                <li>Nombres, CUE y DNIs de los expositores y docentes.</li>
+                                <li>La ubicación de los EcoPuntos y la cantidad de basura que va al relleno sanitario.</li>
+                            </ul>
+                            ¿En qué te puedo ayudar hoy? Escribime lo que necesites saber. 😊
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 sm:p-4 bg-white dark:bg-darkCard border-t border-slate-100 dark:border-darkBorder shrink-0">
+                    <form id="chat-form" onsubmit="enviarMensajeIA(event)" class="relative flex items-center bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-slate-700/80 rounded-full focus-within:ring-2 focus-within:ring-brand-500/40 focus-within:border-brand-500 transition-all p-1.5 pr-2">
+                        <input type="text" id="chat-input" placeholder="Conversá con la IA... (Ej: ¿Cuáles son las estadísticas?)" 
+                            class="w-full bg-transparent border-none py-2.5 sm:py-3 pl-4 pr-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-0" autocomplete="off" />
+                        
+                        <button type="submit" id="chat-submit" class="w-9 h-9 sm:w-10 sm:h-10 bg-brand-600 hover:bg-brand-500 text-white rounded-full flex items-center justify-center transition-transform hover:scale-105 shadow-sm disabled:opacity-50 disabled:hover:scale-100 shrink-0">
+                            <i data-lucide="send" class="w-4 h-4 ml-0.5"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 py-12 border-t border-slate-900 text-slate-400 text-center">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-brand-500 mx-auto mb-4 border border-slate-800">
+                <i data-lucide="recycle" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-display font-bold text-white text-lg tracking-tight mb-2">Hacelo Circular, hacelo por mí</h3>
+            <p class="text-xs sm:text-sm">Escuela de Educación Secundaria N° 1 "Antonio González Balcarce" | CUE: 060613900</p>
+            <div class="mt-5 flex justify-center gap-3 text-[10px] uppercase font-bold tracking-widest text-slate-500">
+                <span>Año Lectivo 2026</span> • <span>Balcarce</span> • <span>Provincia de Buenos Aires</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGICA JAVASCRIPT -->
+    <script>
+        // Iniciar Iconos Lucide
+        lucide.createIcons();
+
+        // Iniciar AOS Animaciones
+        AOS.init({ once: true, duration: 800, offset: 40 });
+
+        // TEMA Claro/Oscuro
+        const html = document.documentElement;
+        function toggleTheme() {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            if(window.chartInstancia) loadChart();
+        }
+        document.getElementById('theme-toggle-mobile').addEventListener('click', toggleTheme);
+        document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
+        
+        const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if(localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && preferDark)){
+            html.classList.add('dark');
+        }
+
+        // Gráfico (Chart.js)
+        let chartInstancia = null;
+        function loadChart() {
+            const isDark = html.classList.contains('dark');
+            const colorGrid = isDark ? '#1e293b' : '#f1f5f9';
+            const colorTxt = isDark ? '#94a3b8' : '#64748b';
+
+            if(chartInstancia) chartInstancia.destroy();
+            const ctx = document.getElementById('chartEncuestas').getContext('2d');
+            
+            chartInstancia = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Miércoles Verde', 'Ninguna', 'Botellas de Amor', 'Compostaje'],
+                    datasets: [{
+                        data: [42.9, 26.4, 19.3, 11.4],
+                        backgroundColor: ['#10b981', '#64748b', '#f43f5e', '#f59e0b'],
+                        borderRadius: 6, barPercentage: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { backgroundColor: isDark ? '#1e293b' : '#0f172a', padding: 12, callbacks: { label: c => ` ${c.raw}% de la población` } }
+                    },
+                    scales: {
+                        y: { max: 50, grid: { color: colorGrid }, ticks: { color: colorTxt, font: {size: 11}, callback: v => v + '%' } },
+                        x: { grid: { display: false }, ticks: { color: colorTxt, font: { size: 11, weight: '500' } } }
+                    }
+                }
+            });
+        }
+        window.addEventListener('load', loadChart);
+
+        // ==========================================
+        // LÓGICA DE WEBHOOK DE DISCORD (ENCUESTA MEJORADA)
+        // ==========================================
+        async function enviarEncuesta(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('btn-enviar-encuesta');
+            
+            // Obtener valores
+            const nombre = document.getElementById('enc-nombre').value.trim();
+            const apellido = document.getElementById('enc-apellido').value.trim();
+            const escuela = document.getElementById('enc-escuela').value.trim();
+            const curso = document.getElementById('enc-curso').value.trim();
+            
+            // Nuevos valores (Opcionales, por lo que agregamos validación)
+            const opinion = document.getElementById('enc-opinion').value.trim() || 'Sin comentarios adicionales.';
+            const aporte = document.getElementById('enc-aporte').value.trim() || 'Sin propuestas adicionales.';
+
+            // Estado de carga
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Enviando...';
+            lucide.createIcons();
+
+            // URL del Webhook
+            const webhookUrl = "https://discord.com/api/webhooks/1340983903560798218/MR1YOONg3kMBs3AhBQvntz_5cYZjifsxOZLfQhSRjdzCmLWpG5pHrjN0CYuh3XAsvvhc";
+
+            const payload = {
+                embeds: [{
+                    title: "🌱 Nuevo Aporte Escolar: Hacelo Circular",
+                    description: "Se ha registrado un nuevo contacto en la página web oficial del proyecto.",
+                    color: 1093145, // Verde esmeralda
+                    fields: [
+                        { name: "👤 Estudiante / Persona", value: `${nombre} ${apellido}`, inline: true },
+                        { name: "📚 Curso / Año", value: curso, inline: true },
+                        { name: "🏫 Institución", value: escuela, inline: false },
+                        { name: "💭 Opinión sobre el Proyecto", value: opinion, inline: false },
+                        { name: "💡 Aporte o Propuesta", value: aporte, inline: false }
+                    ],
+                    footer: { text: "Plataforma Web • E.E.S. N° 1 Balcarce" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            try {
+                const res = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok || res.status === 204) { 
+                    btn.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5"></i> ¡Datos Enviados!';
+                    btn.classList.replace('bg-brand-600', 'bg-emerald-600');
+                    form.reset();
+                    
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Enviar mis datos <i data-lucide="send" class="w-4 h-4 ml-1"></i>';
+                        btn.classList.replace('bg-emerald-600', 'bg-brand-600');
+                        lucide.createIcons();
+                    }, 3500);
+                } else {
+                    throw new Error('Error HTTP: ' + res.status);
+                }
+            } catch (error) {
+                console.error("Error Webhook:", error);
+                btn.innerHTML = '<i data-lucide="x-circle" class="w-5 h-5"></i> Error al conectar';
+                btn.classList.replace('bg-brand-600', 'bg-rose-600');
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Reintentar <i data-lucide="refresh-cw" class="w-4 h-4 ml-1"></i>';
+                    btn.classList.replace('bg-rose-600', 'bg-brand-600');
+                    lucide.createIcons();
+                }, 3500);
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // CEREBRO DE LA IA CONVERSACIONAL
+        // ==========================================
+        const apiKey = ""; 
+        const aiSystemPrompt = `
+Eres el Asistente Virtual conversacional del proyecto escolar "Hacelo Circular, hacelo por mí" de la Escuela de Educación Secundaria N° 1 "Antonio González Balcarce" (CUE: 060613900) - Balcarce, Buenos Aires, Argentina. Año lectivo: 2026.
+
+PERSONALIDAD:
+- Eres amigable, natural, entusiasta y muy empático. Hablas como un vocero del proyecto o un estudiante apasionado por la ecología.
+- Si el usuario te saluda, devuélvele el saludo con simpatía.
+- Tu conocimiento se basa ÚNICA y ESTRICTAMENTE en la información de la Carpeta de Campo y el Informe Técnico proveídos abajo. 
+- Si te preguntan algo no relacionado con el proyecto, responde amablemente que tu cerebro está programado únicamente para hablar del proyecto 'Hacelo Circular'.
+
+INFORMACIÓN ESTRICTA DEL PROYECTO (USAR DATOS EXACTOS):
+1. AUTORES E INSTITUCIÓN:
+- Estudiantes Expositores: Aylén Fernandez Arias (DNI 48.766.154), Joaquin Ayala (DNI 49.075.962).
+- Docentes Asesores: Alejandra Etcheverriborde (DNI 34.253.768), Laura Mastrovita (DNI 24.969.743).
+- Áreas implicadas: Secundaria Superior (4to a 6to año), Ciencias Sociales, Geografía, Química y Comunicación.
+
+2. TRABAJO DE CAMPO Y ESTADÍSTICAS:
+- A 140 encuestados se les regalaba una suculenta plantada en envase reciclado.
+- 98.6% se preocupa porque los residuos son un problema creciente.
+- 97.1% pide que el desarrollo económico esté en armonía con el ambiente.
+- 60.7% conoce un río, laguna o playa donde ya no se puede bañar la gente por la contaminación.
+- Prácticas domésticas: 42.9% saca residuos secos en los "Miércoles Verde", 26.4% no hace Nada, 19.3% arma Botellas de Amor, 11.4% composta.
+- GRAN PROBLEMA: El 67% desconoce la ubicación de los EcoPuntos locales. Por eso se creó el mapa digital de Google My Maps.
+
+3. UBICACIONES Y GEORREFERENCIACIÓN EN BALCARCE:
+- Balcarce envía en promedio 45 toneladas diarias de basura al Relleno Sanitario, donde trabaja una cooperativa que sustenta a más de 15 familias.
+- EcoPuntos Municipales: GeoParque Pun Antu (McCain), Plaza Colón, Los Pinos, Napaleofú.
+- Botellas de Amor (plásticos flexibles): Centro de Monitoreo y Escuela Especial N° 502.
+- Plan BIO (Aceite vegetal usado de cocina): Escuelas Especiales 501 y 502, Taller Protegido, Hogar Nuestro Sueño. Empresas: McCain, Ogham, La Riviera. El aceite va a Buenos Aires para hacer biocombustible.
+
+4. LA JORNADA SOCIOCUMUNITARIA DEL 31 DE OCTUBRE DE 2025:
+- Participaron más de 150 personas. Hubo transmisión de radio escolar FM 88.9.
+- Red de instituciones: INTA Balcarce, UNMdP, Sacheteras Balcarce, Banco de Alimentos, NODO Rescate.
+- Talleres prácticos: EcoJuegos, EcoPlatos, confección de EcoBolsas (con sachets de leche). Taller "Perritos Picassitos" (camas para perros con neumáticos).
+- Cestos escolares: Se presentaron 2 nuevos cestos separadores financiados por "Voces Adolescentes" del Senado PBA.
+
+FORMATO:
+- Usa Markdown para resaltar en negrita datos importantes (ej. **67%**, **Aylén Fernandez Arias**, **INTA**). Usa listas con viñetas para organizar las respuestas largas.
+`;
+
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const submitBtn = document.getElementById('chat-submit');
+
+        function insertarPregunta(texto) { 
+            chatInput.value = texto; 
+            chatInput.focus(); 
+        }
+
+        function formatMarkdown(texto) {
+            let res = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            res = res.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            res = res.replace(/\n/g, '<br>');
+            res = res.replace(/<br>- (.*?)(?=<br>|$)/g, '<ul><li>$1</li></ul>').replace(/<\/ul><ul>/g, '');
+            return res;
+        }
+
+        function agregarBurbujaChat(texto, emisor) {
+            const div = document.createElement('div');
+            div.className = emisor === 'user' ? 'flex gap-3 sm:gap-4 w-full flex-row-reverse animate-msg-enter' : 'flex gap-3 sm:gap-4 w-full animate-msg-enter';
+            
+            const icono = emisor === 'user' 
+                ? `<div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white shrink-0 shadow-sm"><i data-lucide="user" class="w-4 h-4"></i></div>`
+                : `<div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white shrink-0 shadow-sm"><i data-lucide="bot" class="w-4 h-4"></i></div>`;
+            
+            const clasesBurbuja = emisor === 'user' 
+                ? 'bg-gradient-to-br from-brand-600 to-teal-500 text-white p-3.5 sm:p-4 rounded-2xl rounded-tr-sm text-sm chat-content w-[85%] sm:max-w-[75%] leading-relaxed shadow-sm' 
+                : 'bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 p-3.5 sm:p-4 rounded-2xl rounded-tl-sm text-sm text-slate-700 dark:text-slate-200 chat-content w-[85%] sm:max-w-[75%] leading-relaxed shadow-sm';
+            
+            div.innerHTML = `${icono}<div class="${clasesBurbuja}">${emisor === 'bot' ? formatMarkdown(texto) : texto}</div>`;
+            chatBox.appendChild(div);
+            lucide.createIcons();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function mostrarEscribiendo() {
+            const div = document.createElement('div'); 
+            div.id = 'typing-indicator'; 
+            div.className = 'flex gap-3 sm:gap-4 w-full animate-msg-enter';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white shrink-0 shadow-sm">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                </div>
+                <div class="typing-indicator-container">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium mr-1">La IA está pensando</span>
+                    <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+                </div>`;
+            chatBox.appendChild(div); 
+            lucide.createIcons();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function enviarMensajeIA(e) {
+            e.preventDefault(); 
+            const textoConsulta = chatInput.value.trim(); 
+            if (!textoConsulta) return;
+            
+            chatInput.value = ''; chatInput.disabled = true; submitBtn.disabled = true;
+            agregarBurbujaChat(textoConsulta, 'user'); mostrarEscribiendo();
+            
+            try {
+                const response = await consultarAGemini(textoConsulta);
+                document.getElementById('typing-indicator').remove();
+                agregarBurbujaChat(response, 'bot');
+            } catch (err) {
+                document.getElementById('typing-indicator').remove();
+                agregarBurbujaChat('**Ups, hubo un problema de conexión.** La plataforma de datos no responde. Por favor, reintentá tu pregunta.', 'bot');
+            } finally {
+                chatInput.disabled = false; submitBtn.disabled = false; chatInput.focus();
+            }
+        }
+
+        async function consultarAGemini(pregunta) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const cuerpo = { contents: [{ parts: [{ text: pregunta }] }], systemInstruction: { parts: [{ text: aiSystemPrompt }] } };
+            let delay = 1000;
+            for(let i = 0; i < 5; i++){
+                try {
+                    const req = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
+                    if(req.ok) { const data = await req.json(); return data.candidates[0].content.parts[0].text; }
+                } catch(e) {}
+                await new Promise(r => setTimeout(r, delay)); delay *= 2; // Retry con backoff
+            } throw new Error('Timeout en API');
+        }
+    </script>
+</body>
+</html>
