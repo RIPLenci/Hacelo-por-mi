@@ -110,7 +110,7 @@
                         <i data-lucide="recycle" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <span class="font-display font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-none block">Hacelo Circular</span>
+                        <span class="font-display font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-none block">Hacelo Circular / Hacelo por Mi</span>
                         <p class="text-[9px] uppercase font-bold text-brand-600 dark:text-brand-400 tracking-wider leading-none mt-1">E.E.S. N° 1 Balcarce</p>
                     </div>
                 </div>
@@ -615,7 +615,7 @@
             const payload = {
                 embeds: [{
                     title: "🌱 Registro Oficial Completo: Hacelo Circular",
-                    description: "Se ha registrado un nuevo apoyo en la plataforma web.",
+                    description: "> Se ha registrado un nuevo apoyo en la plataforma web.",
                     color: 1093145,
                     fields: [
                         { name: "👤 Estudiante", value: `${n} ${a}`, inline: true },
@@ -658,7 +658,7 @@
         // 6. CEREBRO DE LA IA CONVERSACIONAL (100% PRECISIÓN PDF)
         const apiKey = ""; 
         const aiSystemPrompt = `
-Eres el Asistente Virtual Oficial e interactivo de "Hacelo Circular, hacelo por mí" (E.E.S. N° 1 Balcarce, CUE: 060613900). Año 2026.
+Eres el Asistente Virtual Oficial e interactivo de "Hacelo Circular, Hacelo por mí" (E.E.S. N° 1 Balcarce, CUE: 060613900). Año 2026.
 COMPORTAMIENTO:
 - Actúa como un estudiante/vocero del proyecto. Eres cálido, entusiasta, natural y extremadamente preciso con los datos.
 - TU CEREBRO ESTÁ LIMITADO AL 100% A LA CARPETA DE CAMPO PROVISTA AQUÍ. 
@@ -673,6 +673,7 @@ INFORMACIÓN EXACTA E INAMOVIBLE A USAR:
 6. Jornada 31 Octubre 2025 (+150 personas, radio FM 88.9). Articulamos con INTA Balcarce, UNMdP (Cocinas Soberanas), Sacheteras, NODO y Banco de Alimentos. Hicimos "Perritos Picassitos" (camas con neumáticos), EcoBolsas con sachets y se inauguraron cestos de "Voces Adolescentes" del Senado PBA.
 7. Química: Orgánicos (Biodegradables con carbono) e Inorgánicos (Plástico, vidrio, papel. Van a los EcoPuntos).
 8. Plan BIO (Aceite de cocina, muy contaminante): Escuelas 501, 502, Taller Protegido. Se hace biocombustible en Buenos Aires.
+9. Jornada el dia 26 de junio del 2026 se lleva a cabo una jornada en el gimnacio de la escuela "Santa Rosa" donde se realizara la feria de ciencias desde la 1 de la tarde hasta la 5.
 
 Formato: Usa Markdown (listas y negritas) para facilitar la lectura.
 `;
@@ -734,7 +735,7 @@ Formato: Usa Markdown (listas y negritas) para facilitar la lectura.
                 agregarBurbujaChat(data.candidates[0].content.parts[0].text, 'bot');
             } catch (err) {
                 document.getElementById('typing-indicator').remove();
-                agregarBurbujaChat('**Ups, error de red.** El servidor de la escuela está saturado. Por favor, reintentá tu pregunta en unos segundos.', 'bot');
+                agregarBurbujaChat(' ⛔ *Ups, error de red.** El servidor de la escuela está saturado. Por favor, reintentá tu pregunta en unos segundos.', 'bot');
             } finally {
                 chatInput.disabled = false; submitChatBtn.disabled = false; chatInput.focus();
             }
